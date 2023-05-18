@@ -50,7 +50,11 @@ class GoogleLens:
         if data["match"] is not None:
             visual_matches = prerender_script[1][1][8][8][0][12]
         else:
-            visual_matches = prerender_script[0][1][8][8][0][12]
+            try:
+                visual_matches = prerender_script[0][1][8][8][0][12]
+            except IndexError:
+                return data
+
         for match in visual_matches:
             data["similar"].append(
                 {
