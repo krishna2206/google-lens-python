@@ -18,7 +18,6 @@ class GoogleLens:
             {'User-agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:103.0) Gecko/20100101 Firefox/103.0'}
         )
 
-
     def __get_prerender_script(self, page: str):
         """
         Extracts the relevant prerendered JavaScript data from the HTML page.
@@ -37,7 +36,8 @@ class GoogleLens:
             lambda s: (
                 'AF_initDataCallback(' in s.text and
                 re.search(r"key: 'ds:(\d+)'", s.text).group(1) == "0"),
-            soup.find_all('script')))[0].text
+            soup.find_all('script')
+        ))[0].text
         
         # Clean up the script content to prepare it for JSON parsing
         prerender_script = prerender_script.replace(
@@ -47,7 +47,8 @@ class GoogleLens:
         hash = re.search(r"hash: '(\d+)'", prerender_script).group(1)
         prerender_script = prerender_script.replace(
             f"key: 'ds:0', hash: '{hash}', data:",
-            f"\"key\": \"ds:0\", \"hash\": \"{hash}\", \"data\":").replace("sideChannel:", "\"sideChannel\":")
+            f"\"key\": \"ds:0\", \"hash\": \"{hash}\", \"data\":"
+        ).replace("sideChannel:", "\"sideChannel\":")
 
         # Parse the cleaned prerender script into a JSON object
         prerender_script = json.loads(prerender_script)
@@ -74,9 +75,9 @@ class GoogleLens:
         # Extract the best match information if available
         try:
             data["match"] = {
-                "title": prerender_script[0][1][8][12][0][0][0],
-                "thumbnail": prerender_script[0][1][8][12][0][2][0][0],
-                "pageURL": prerender_script[0][1][8][12][0][2][0][4]
+                "title": prerender_script[0][1][8][12][0][0][0],  # Extract item title
+                "thumbnail": prerender_script[0][1][8][12][0][2][0][0],  # Extract thumbnail URL
+                "pageURL": prerender_script[0][1][8][12][0][2][0][4]  # Extract page URL
             }
         except IndexError:
             # If data is unavailable, continue without a match
@@ -93,13 +94,19 @@ class GoogleLens:
 
         # Iterate through the visual matches and extract relevant details
         for match in visual_matches:
+            # Safely extract thumbnail URL if available
+            thumbnail_url = match[0][0] if (
+                isinstance(match[0], list) and len(match[0]) > 0 and
+                isinstance(match[0][0], str)
+            ) else None
+
             # Append the extracted information to the "similar" matches list
             data["similar"].append(
                 {
                     "title": match[3],
-                    "thumbnail": match[0][0],
+                    "thumbnail": thumbnail_url,
                     "pageURL": match[5],
-                    "sourceWebsite": match[14]
+                    "sourceWebsite": match[14],
                 }
             )
 
