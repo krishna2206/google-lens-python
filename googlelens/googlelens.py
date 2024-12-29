@@ -82,7 +82,7 @@ class GoogleLens:
         except IndexError:
             # If data is unavailable, continue without a match
             pass
-        
+
         # Determine which section to use for extracting visual matches
         if data["match"] is not None:
             visual_matches = prerender_script[1][1][8][8][0][12]
@@ -100,13 +100,33 @@ class GoogleLens:
                 isinstance(match[0][0], str)
             ) else None
 
+            # Safely extract price if available
+            price = match[0][7][1] if (
+                isinstance(match[0], list) and len(match[0]) > 7 and
+                isinstance(match[0][7], list) and len(match[0][7]) > 1 and
+                isinstance(match[0][7][1], str)
+            ) else None
+
+            # Clean price by removing any special characters (e.g., currency signs)
+            price = re.sub(r"[^\d.]", "", price) if price is not None else None
+
+            # Safely extract currency if available
+            currency = match[0][7][5] if (
+                isinstance(match[0], list) and len(match[0]) > 7 and
+                isinstance(match[0][7], list) and len(match[0][7]) > 5 and
+                isinstance(match[0][7][5], str)
+            ) else None
+
             # Append the extracted information to the "similar" matches list
             data["similar"].append(
                 {
-                    "title": match[3],
-                    "thumbnail": thumbnail_url,
-                    "pageURL": match[5],
-                    "sourceWebsite": match[14],
+                    "title": match[3],  # Extract item title
+                    "similarity score": match[1],  # Extract similarity (?) score
+                    "thumbnail": thumbnail_url,  # Thumbnail URL
+                    "pageURL": match[5],  # Extract page URL
+                    "sourceWebsite": match[14],  # Extract source website name
+                    "price": price,  # Price (cleaned)
+                    "currency": currency  # Currency symbol
                 }
             )
 
