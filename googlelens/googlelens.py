@@ -147,11 +147,18 @@ class GoogleLens:
             'encoded_image': (file_path, open(file_path, 'rb')),
             'image_content': ''
         }
+
+        # Build the parameter dictionary
+        params = {
+            "hl": "en",  # Adjust host language here
+            "gl": "us",  # Adjust the geolocation parameter here
+        }
         
         # Send a POST request to upload the file
         response = self.session.post(
             self.url + "/upload",
             files=multipart,
+            params=params,
             allow_redirects=False  # Must be false to capture the 302 response
         )
 
@@ -159,7 +166,7 @@ class GoogleLens:
         if response.status_code != 302: # Expecting a 302 for redirect
             print(f"Error uploading file: Status code {response.status_code}")
             print(response.text)
-            return None
+            return None  # Or handle the error appropriately
 
         # Get the redirect URL from the 'Location' header
         search_url = response.headers.get('Location')
@@ -167,7 +174,7 @@ class GoogleLens:
         # If redirect URL is not found, print an error and return
         if search_url is None:
             print("Redirect URL not found in response headers.")
-            return None
+            return None  # Or handle the error appropriately
         
         # Proceed with the redirect
         response = self.session.get(search_url)
@@ -188,8 +195,18 @@ class GoogleLens:
         Returns:
         The parsed search results after extracting and processing the response.
         """
+        # Build the parameter dictionary
+        params = {
+            "url": url,
+            "hl": "en",  # Adjust host language here
+            "gl": "us",  # Adjust geolocation here
+        }
         # Send a GET request to the provided URL
-        response = self.session.get(self.url + "/uploadbyurl", params={"url": url}, allow_redirects=True)
+        response = self.session.get(
+            self.url + "/uploadbyurl",
+            params=params,
+            allow_redirects=True
+        )
 
         # Extract the prerendered JavaScript content for further parsing
         prerender_script = self.__get_prerender_script(response.text)
