@@ -123,26 +123,39 @@ class GoogleLens:
         Returns:
         The parsed search results after extracting and processing the response.
         """
-        multipart = {'encoded_image': (file_path, open(file_path, 'rb')), 'image_content': ''}
+        multipart = {
+            'encoded_image': (file_path, open(file_path, 'rb')),
+            'image_content': ''
+        }
         
         # Send a POST request to upload the file
-        response = self.session.post(self.url + "/upload", files=multipart, allow_redirects=False)
-        
-        # Get the object containing the search URL from the response
-        search_url = BeautifulSoup(
-            response.text,
-            'html.parser').find('meta', {'http-equiv': 'refresh'}).get('content')
-        
-        # Extract the search URL
-        search_url = re.sub("^.*URL='", '', search_url).replace("0; URL=", "")
+        response = self.session.post(
+            self.url + "/upload",
+            files=multipart,
+            allow_redirects=False  # Must be false to capture the 302 response
+        )
 
-        # Send a GET request to the search URL
-        response = self.session.get(search_url)
+        # Check if the request was successful
+        if response.status_code != 302: # Expecting a 302 for redirect
+            print(f"Error uploading file: Status code {response.status_code}")
+            print(response.text)
+            return None
+
+        # Get the redirect URL from the 'Location' header
+        search_url = response.headers.get('Location')
+
+        # If redirect URL is not found, print an error and return
+        if search_url is None:
+            print("Redirect URL not found in response headers.")
+            return None
         
-        # Extract the prerendered JavaScript content for further parsing
+        # Proceed with the redirect
+        response = self.session.get(search_url)
+
+        # Extract the prerendered JavaScript content for further parsing.
         prerender_script = self.__get_prerender_script(response.text)
 
-        # Parse the prerender script and return the processed search result
+        # Parse the prerender script and return the processed search result.
         return self.__parse_prerender_script(prerender_script)
         
     def search_by_url(self, url: str):
