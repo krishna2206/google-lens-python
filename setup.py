@@ -12,7 +12,7 @@ setup(
     description=DESCRIPTION,
     long_description=LONG_DESCRIPTION,
     packages=find_packages(),
-    install_requires=['requests', 'bs4'],
+    install_requires=['requests>=2.34.2', 'beautifulsoup4>=4.15.0'],
     keywords=['python', 'google', 'scraping'],
     classifiers=[
         "Development Status :: 5 - Production/Stable",
