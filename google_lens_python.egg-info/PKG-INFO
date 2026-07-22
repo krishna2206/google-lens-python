@@ -1,0 +1,13 @@
+Metadata-Version: 2.1
+Name: google-lens-python
+Version: 2023.3.18
+Summary: A Python package to reverse image search in Google Lens
+Author: Anhy Krishna Fitiavana
+Author-email: fitiavana.krishna@gmail.com
+Keywords: python,google,scraping
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: OS Independent
+
+A Python package to reverse image search in Google Lens, with the ability to search by file path or by url.
